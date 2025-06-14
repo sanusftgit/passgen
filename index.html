@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Password Generator</title>
+  <style>
+        :root {
+      --bg-color: #1e1e2f;
+      --container-bg: #2e2e3f;
+      --text-color: #f1f1f1;
+      --accent-color: #00b894;
+      --output-bg: #444;
+      --shadow: rgba(0, 0, 0, 0.3);
+    }
+
+    body.light {
+      --bg-color: #f4f4f4;
+      --container-bg: #ffffff;
+      --text-color: #222;
+      --accent-color: #00796b;
+      --output-bg: #e0e0e0;
+      --shadow: rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      padding: 20px;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .container {
+      background: var(--container-bg);
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 12px 24px var(--shadow);
+      width: 100%;
+      max-width: 450px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 1.8em;
+    }
+
+    label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 12px 0;
+      font-size: 1em;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      margin-top: 6px;
+    }
+
+    .output {
+      font-size: 1.2em;
+      margin-top: 18px;
+      background: var(--output-bg);
+      padding: 12px;
+      border-radius: 10px;
+      word-break: break-all;
+      text-align: center;
+      border: 1px solid #666;
+    }
+
+    button {
+      padding: 12px;
+      margin-top: 14px;
+      width: 100%;
+      font-size: 1em;
+      font-weight: 600;
+      background: var(--accent-color);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      color: white;
+      transition: background 0.2s ease;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    input[type="checkbox"] {
+      transform: scale(1.2);
+    }
+
+    .strength {
+      margin-top: 10px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .strength.weak {
+      color: #e74c3c;
+    }
+
+    .strength.medium {
+      color: #f1c40f;
+    }
+
+    .strength.strong {
+      color: #2ecc71;
+    }
+
+    .theme-toggle {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 10px;
+    }
+
+    .theme-toggle label {
+      font-size: 0.9em;
+      gap: 10px;
+    }
+
+    @media (max-width: 500px) {
+      .container {
+        padding: 20px;
+      }
+      h1 {
+        font-size: 1.5em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="theme-toggle">
+      <label>
+        <span>🌞/🌙</span>
+        <input type="checkbox" id="themeSwitch">
+      </label>
+    </div>
+
+    <h1>Password Generator</h1>
+
+    <label>Password Length: <span id="lengthDisplay">08</span></label>
+    <input type="range" min="6" max="16" value="16" id="lengthRange" />
+
+    <label><span>Include Uppercase</span><input type="checkbox" id="includeUpper" checked /></label>
+    <label><span>Include Lowercase</span><input type="checkbox" id="includeLower" checked /></label>
+    <label><span>Include Numbers</span><input type="checkbox" id="includeNumbers" checked /></label>
+    <label><span>Include Symbols</span><input type="checkbox" id="includeSymbols" /></label>
+
+    <button onclick="generatePassword()">Generate Password</button>
+    <div class="output" id="passwordDisplay">Your password will appear here</div>
+    <div class="strength" id="strengthText"></div>
+    <button onclick="copyPassword()">Copy to Clipboard</button>
+  </div>
+
+  <script>
+    const lengthRange = document.getElementById('lengthRange');
+    const lengthDisplay = document.getElementById('lengthDisplay');
+    const passwordDisplay = document.getElementById('passwordDisplay');
+    const strengthText = document.getElementById('strengthText');
+    const themeSwitch = document.getElementById('themeSwitch');
+
+    // Theme Toggle
+    themeSwitch.addEventListener('change', () => {
+      document.body.classList.toggle('light');
+    });
+
+    lengthRange.addEventListener('input', () => {
+      lengthDisplay.textContent = lengthRange.value;
+    });
+
+    function generatePassword() {
+      const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      const lower = "abcdefghijklmnopqrstuvwxyz";
+      const numbers = "0123456789";
+      const symbols = "!@#$%^&*()_+[]{}|;:,.<>?";
+
+      const length = +lengthRange.value;
+      const useUpper = document.getElementById('includeUpper').checked;
+      const useLower = document.getElementById('includeLower').checked;
+      const useNumbers = document.getElementById('includeNumbers').checked;
+      const useSymbols = document.getElementById('includeSymbols').checked;
+
+      let allChars = "";
+      let typesCount = 0;
+
+      if (useUpper) { allChars += upper; typesCount++; }
+      if (useLower) { allChars += lower; typesCount++; }
+      if (useNumbers) { allChars += numbers; typesCount++; }
+      if (useSymbols) { allChars += symbols; typesCount++; }
+
+      if (!allChars) {
+        passwordDisplay.textContent = "Please select at least one character type.";
+        strengthText.textContent = "";
+        return;
+      }
+
+      let password = "";
+      for (let i = 0; i < length; i++) {
+        password += allChars[Math.floor(Math.random() * allChars.length)];
+      }
+
+      passwordDisplay.textContent = password;
+      evaluateStrength(password, typesCount);
+    }
+
+    function evaluateStrength(password, typesCount) {
+      let strength = "weak";
+      if (password.length >= 12 && typesCount >= 3) {
+        strength = "strong";
+      } else if (password.length >= 8 && typesCount >= 2) {
+        strength = "medium";
+      }
+
+      strengthText.textContent = `Strength: ${strength.charAt(0).toUpperCase() + strength.slice(1)}`;
+      strengthText.className = `strength ${strength}`;
+    }
+
+    function copyPassword() {
+      const text = passwordDisplay.textContent;
+      if (text && !text.includes("Please select")) {
+        navigator.clipboard.writeText(text);
+        alert("Password copied to clipboard!");
+      }
+    }
+  </script>
+</body>
+</html>
